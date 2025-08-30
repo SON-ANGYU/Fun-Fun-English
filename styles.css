@@ -43,14 +43,47 @@ body {
     padding: 0 20px;
 }
 
+/* 로고 스타일 */
 .logo-image {
-    height: 50px;
+    height: 60px;
     width: auto;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .logo-image:hover {
     transform: scale(1.05);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+/* 로고 애니메이션 효과 */
+.logo-image {
+    animation: logoFloat 3s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+.logo-image:hover {
+    animation: logoPulse 0.6s ease-in-out;
+}
+
+@keyframes logoPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.08);
+    }
+    100% {
+        transform: scale(1.05);
+    }
 }
 
 .nav-menu {
@@ -927,10 +960,30 @@ body {
 }
 
 .footer-logo {
-    height: 40px;
+    height: 45px;
     width: auto;
     margin-bottom: 1rem;
-    filter: brightness(0) invert(1);
+    transition: all 0.3s ease;
+    filter: brightness(0) invert(1) sepia(1) saturate(5) hue-rotate(45deg);
+}
+
+.footer-logo:hover {
+    transform: scale(1.05);
+    filter: brightness(0) invert(1) sepia(1) saturate(8) hue-rotate(45deg);
+}
+
+/* 푸터 로고 애니메이션 */
+.footer-logo {
+    animation: footerLogoGlow 4s ease-in-out infinite;
+}
+
+@keyframes footerLogoGlow {
+    0%, 100% {
+        filter: brightness(0) invert(1) sepia(1) saturate(5) hue-rotate(45deg);
+    }
+    50% {
+        filter: brightness(0) invert(1) sepia(1) saturate(8) hue-rotate(45deg);
+    }
 }
 
 .footer-section h3,
@@ -997,6 +1050,10 @@ body {
 /* 반응형 디자인 */
 @media (max-width: 768px) {
     .logo-image {
+        height: 50px;
+    }
+    
+    .footer-logo {
         height: 40px;
     }
     
@@ -1065,6 +1122,10 @@ body {
 
 @media (max-width: 480px) {
     .logo-image {
+        height: 45px;
+    }
+    
+    .footer-logo {
         height: 35px;
     }
     
