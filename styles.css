@@ -43,10 +43,14 @@ body {
     padding: 0 20px;
 }
 
-.logo h2 {
-    color: #2563eb;
-    font-size: 1.8rem;
-    font-weight: 700;
+.logo-image {
+    height: 50px;
+    width: auto;
+    transition: transform 0.3s ease;
+}
+
+.logo-image:hover {
+    transform: scale(1.05);
 }
 
 .nav-menu {
@@ -98,48 +102,75 @@ body {
 
 /* 히어로 섹션 */
 .hero {
-    padding: 120px 0 80px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
 }
 
-.hero-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+.hero-slider {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    display: flex;
     align-items: center;
-    max-width: 1200px;
+    justify-content: center;
+}
+
+.slide.active {
+    opacity: 1;
+}
+
+.hero-overlay {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 3rem;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 800px;
     margin: 0 auto;
-    padding: 0 20px;
+    backdrop-filter: blur(5px);
 }
 
 .hero-text h1 {
-    font-size: 3.5rem;
+    font-size: 4rem;
     font-weight: 700;
     margin-bottom: 1.5rem;
     line-height: 1.2;
+    color: #ffffff;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
 .hero-text p {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     margin-bottom: 2rem;
-    opacity: 0.9;
+    color: #ffffff;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 0, 0, 0.5);
 }
 
 .cta-button {
-    background: #fbbf24;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
     color: #1f2937;
     border: none;
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
-    font-weight: 600;
+    padding: 1.2rem 2.5rem;
+    font-size: 1.2rem;
+    font-weight: 700;
     border-radius: 50px;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+    box-shadow: 0 4px 20px rgba(251, 191, 36, 0.5), 0 0 30px rgba(251, 191, 36, 0.3);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .cta-button:hover {
@@ -148,11 +179,60 @@ body {
     box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
 }
 
-.hero-image img {
+/* 히어로 네비게이션 */
+.hero-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
     width: 100%;
-    height: auto;
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2rem;
+    z-index: 10;
+}
+
+.nav-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+/* 히어로 도트 네비게이션 */
+.hero-dots {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 1rem;
+    z-index: 10;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dot.active,
+.dot:hover {
+    background: white;
+    transform: scale(1.2);
 }
 
 /* 섹션 공통 스타일 */
@@ -253,8 +333,10 @@ body {
 
 .teachers-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
 .teacher-card {
@@ -263,11 +345,28 @@ body {
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    position: relative;
 }
 
 .teacher-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.teacher-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.teacher-card:hover::before {
+    left: 100%;
 }
 
 .teacher-image {
@@ -307,6 +406,64 @@ body {
     font-size: 0.9rem;
 }
 
+.teacher-link {
+    margin-top: 1rem;
+    padding: 0.8rem 1rem;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: white;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.teacher-card:hover .teacher-link {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.teacher-link span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.teachers-more {
+    text-align: center;
+    margin-top: 3rem;
+}
+
+.more-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+}
+
+.more-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(37, 99, 235, 0.4);
+}
+
+.more-button i {
+    transition: transform 0.3s ease;
+}
+
+.more-button:hover i {
+    transform: translateX(5px);
+}
+
 /* 커리큘럼 섹션 */
 .curriculum {
     padding: 80px 0;
@@ -315,8 +472,10 @@ body {
 
 .curriculum-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
 .curriculum-card {
@@ -324,12 +483,31 @@ body {
     padding: 2rem;
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
     text-align: center;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
 .curriculum-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.curriculum-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.curriculum-card:hover::before {
+    left: 100%;
 }
 
 .curriculum-icon {
@@ -369,6 +547,83 @@ body {
     color: #4b5563;
     position: relative;
     padding-left: 1.5rem;
+}
+
+/* 커리큘럼 호버 오버레이 */
+.curriculum-hover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(124, 58, 237, 0.95));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.4s ease;
+    border-radius: 20px;
+}
+
+.curriculum-card:hover .curriculum-hover {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.hover-content {
+    text-align: center;
+    padding: 2rem;
+    max-width: 90%;
+}
+
+.hover-content h4 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.hover-content p {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.hover-details {
+    margin-bottom: 2rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.detail-item i {
+    color: #fbbf24;
+    width: 20px;
+}
+
+.hover-btn {
+    background: white;
+    color: #2563eb;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.hover-btn:hover {
+    background: #f3f4f6;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 .curriculum-card li::before {
@@ -425,6 +680,17 @@ body {
 .contact-item p {
     color: #6b7280;
     line-height: 1.5;
+}
+
+.contact-link {
+    color: #6b7280;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.contact-link:hover {
+    color: #2563eb;
+    text-decoration: underline;
 }
 
 /* 상담 신청 폼 */
@@ -516,8 +782,8 @@ body {
     position: absolute;
     bottom: 80px;
     right: 0;
-    width: 350px;
-    height: 500px;
+    width: 380px;
+    height: 550px;
     background: white;
     border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
@@ -566,6 +832,21 @@ body {
     margin-right: auto;
 }
 
+.message.bot a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.2rem 0.5rem;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.message.bot a:hover {
+    background: rgba(37, 99, 235, 0.2);
+    text-decoration: underline;
+}
+
 .message.user {
     background: #2563eb;
     color: white;
@@ -600,6 +881,37 @@ body {
     justify-content: center;
 }
 
+/* 빠른 질문 버튼 */
+.quick-questions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.quick-btn {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    padding: 0.5rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.quick-btn:hover {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
 /* 푸터 */
 .footer {
     background: #1f2937;
@@ -612,6 +924,13 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 2rem;
     margin-bottom: 2rem;
+}
+
+.footer-logo {
+    height: 40px;
+    width: auto;
+    margin-bottom: 1rem;
+    filter: brightness(0) invert(1);
 }
 
 .footer-section h3,
@@ -654,8 +973,33 @@ body {
     margin-bottom: 0.5rem;
 }
 
+.footer-links {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.footer-links a {
+    color: #9ca3af;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.footer-links a:hover {
+    color: #fbbf24;
+}
+
+.footer-links .separator {
+    color: #6b7280;
+    margin: 0 0.5rem;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
+    .logo-image {
+        height: 40px;
+    }
+    
     .hamburger {
         display: flex;
     }
@@ -677,14 +1021,19 @@ body {
         left: 0;
     }
 
-    .hero-content {
-        grid-template-columns: 1fr;
-        text-align: center;
-        gap: 2rem;
-    }
-
     .hero-text h1 {
         font-size: 2.5rem;
+        text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9), 0 0 15px rgba(0, 0, 0, 0.6);
+    }
+
+    .hero-text p {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9), 0 0 10px rgba(0, 0, 0, 0.6);
+    }
+
+    .hero-overlay {
+        padding: 2rem;
+        margin: 0 1rem;
+        background: rgba(0, 0, 0, 0.3);
     }
 
     .about-content {
@@ -699,19 +1048,26 @@ body {
 
     .teachers-grid {
         grid-template-columns: 1fr;
+        max-width: 400px;
     }
 
     .curriculum-grid {
         grid-template-columns: 1fr;
+        max-width: 400px;
     }
 
     .chatbot-container {
-        width: 300px;
+        width: 320px;
+        height: 500px;
         right: -20px;
     }
 }
 
 @media (max-width: 480px) {
+    .logo-image {
+        height: 35px;
+    }
+    
     .container {
         padding: 0 15px;
     }
@@ -725,7 +1081,8 @@ body {
     }
 
     .chatbot-container {
-        width: 280px;
+        width: 300px;
+        height: 480px;
         right: -40px;
     }
 }
@@ -756,4 +1113,247 @@ body {
 .scroll-animation.animate {
     opacity: 1;
     transform: translateY(0);
+}
+
+/* 모달 스타일 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideInUp 0.3s ease;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: white;
+    padding: 1.5rem 2rem;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.modal-header .close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
+
+.modal-header .close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.modal-body h4 {
+    color: #1f2937;
+    margin: 1.5rem 0 1rem 0;
+    font-size: 1.2rem;
+}
+
+.modal-body h4:first-child {
+    margin-top: 0;
+}
+
+.modal-body p {
+    color: #4b5563;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.modal-body ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.modal-body li {
+    color: #4b5563;
+    margin-bottom: 0.5rem;
+}
+
+/* 커리큘럼 모달 스타일 */
+.curriculum-modal {
+    max-width: 700px;
+}
+
+.curriculum-detail-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+.curriculum-detail-header h4 {
+    color: #2563eb;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+}
+
+.curriculum-detail-header p {
+    color: #6b7280;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.curriculum-detail-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 15px;
+    border-left: 4px solid #2563eb;
+}
+
+.info-item i {
+    color: #2563eb;
+    font-size: 1.5rem;
+    margin-top: 0.2rem;
+}
+
+.info-item div {
+    flex: 1;
+}
+
+.info-item strong {
+    display: block;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.info-item span {
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.curriculum-features {
+    margin-bottom: 2rem;
+}
+
+.curriculum-features h5 {
+    color: #1f2937;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    border-left: 3px solid #2563eb;
+    padding-left: 1rem;
+}
+
+.curriculum-features ul {
+    list-style: none;
+    padding: 0;
+}
+
+.curriculum-features li {
+    color: #4b5563;
+    margin-bottom: 0.8rem;
+    padding-left: 2rem;
+    position: relative;
+}
+
+.curriculum-features li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #2563eb;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.curriculum-cta {
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 2px solid #f3f4f6;
+}
+
+.curriculum-cta .cta-button {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.curriculum-cta .cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+}
+
+.cta-note {
+    color: #9ca3af;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .curriculum-detail-info {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-item {
+        padding: 1rem;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
