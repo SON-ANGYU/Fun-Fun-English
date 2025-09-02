@@ -306,6 +306,19 @@ document.getElementById('consultationForm').addEventListener('submit', function(
         message: document.getElementById('message').value
     };
     
+    // 필수 필드 검증
+    if (!formData.name || !formData.phone || !formData.email) {
+        alert('이름, 연락처, 이메일은 필수 입력 항목입니다.');
+        return;
+    }
+    
+    // 이메일 형식 검증
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+        alert('올바른 이메일 형식을 입력해주세요.');
+        return;
+    }
+    
     // son070@naver.com으로 이메일 전송
     sendConsultationEmail(formData);
     
@@ -316,11 +329,12 @@ document.getElementById('consultationForm').addEventListener('submit', function(
     this.reset();
 });
 
-// shuming06@naver.com으로 상담 신청 이메일 전송
+// son070@naver.com으로 상담 신청 이메일 전송
 function sendConsultationEmail(data) {
-    // 이메일 클라이언트로 연결
-    const subject = encodeURIComponent('Fun-Fun English 상담 신청 - ' + data.name);
-    const body = encodeURIComponent(`안녕하세요! Fun-Fun English 상담 신청입니다.
+    try {
+        // 이메일 클라이언트로 연결
+        const subject = encodeURIComponent('Fun-Fun English 상담 신청 - ' + data.name);
+        const body = encodeURIComponent(`안녕하세요! Fun-Fun English 상담 신청입니다.
 
 신청자 정보:
 - 이름: ${data.name}
@@ -331,13 +345,47 @@ function sendConsultationEmail(data) {
 
 빠른 시일 내에 연락 부탁드립니다.
 감사합니다.`);
-    
-    const mailtoLink = `mailto:shuming06@naver.com?subject=${subject}&body=${body}`;
-    window.open(mailtoLink);
-    
-    // 콘솔에 로그 출력
-    console.log('상담 신청 데이터:', data);
-    console.log('이메일 계정: shuming06@naver.com으로 전송됨');
+        
+        const mailtoLink = `mailto:son070@naver.com?subject=${subject}&body=${body}`;
+        
+        // 이메일 클라이언트 열기
+        const emailWindow = window.open(mailtoLink);
+        
+        // 이메일 클라이언트가 열리지 않은 경우 대안 제공
+        if (!emailWindow || emailWindow.closed || typeof emailWindow.closed == 'undefined') {
+            // 클립보드에 이메일 내용 복사
+            const emailContent = `제목: Fun-Fun English 상담 신청 - ${data.name}
+
+안녕하세요! Fun-Fun English 상담 신청입니다.
+
+신청자 정보:
+- 이름: ${data.name}
+- 연락처: ${data.phone}
+- 이메일: ${data.email}
+- 현재 영어 수준: ${getLevelText(data.level)}
+- 상담 내용: ${data.message}
+
+빠른 시일 내에 연락 부탁드립니다.
+감사합니다.
+
+수신자: son070@naver.com`;
+            
+            navigator.clipboard.writeText(emailContent).then(() => {
+                alert('이메일 클라이언트를 열 수 없습니다. 이메일 내용이 클립보드에 복사되었습니다.\n\nson070@naver.com으로 직접 이메일을 보내주세요.');
+            }).catch(() => {
+                alert('이메일 클라이언트를 열 수 없습니다. 직접 son070@naver.com으로 연락해주세요.');
+            });
+        }
+        
+        // 콘솔에 로그 출력
+        console.log('상담 신청 데이터:', data);
+        console.log('이메일 계정: son070@naver.com으로 전송됨');
+        console.log('이메일 링크:', mailtoLink);
+        
+    } catch (error) {
+        console.error('이메일 전송 중 오류 발생:', error);
+        alert('이메일 전송 중 오류가 발생했습니다. 직접 son070@naver.com으로 연락해주세요.');
+    }
 }
 
 // 영어 수준 텍스트 변환
@@ -373,7 +421,7 @@ function showSuccessMessage() {
         z-index: 10000;
         animation: slideInRight 0.5s ease;
     `;
-    successMessage.textContent = '상담 신청이 완료되었습니다! 이메일 클라이언트가 열렸습니다. 빠른 시일 내에 연락드리겠습니다.';
+    successMessage.textContent = '상담 신청이 완료되었습니다! 이메일 클라이언트가 열렸습니다. son070@naver.com으로 전송해주세요. 빠른 시일 내에 연락드리겠습니다.';
     
     // CSS 애니메이션 추가
     const style = document.createElement('style');
@@ -432,7 +480,7 @@ function openConsultation() {
 빠른 시일 내에 연락 부탁드립니다.
 감사합니다.`);
     
-    const mailtoLink = `mailto:shuming06@naver.com?subject=${subject}&body=${body}`;
+    const mailtoLink = `mailto:son070@naver.com?subject=${subject}&body=${body}`;
     window.open(mailtoLink);
 }
 
@@ -630,6 +678,42 @@ function showTermsOfService() {
     document.body.insertAdjacentHTML('beforeend', termsContent);
 }
 
+// 환불정책 표시
+function showRefundPolicy() {
+    const refundContent = `
+        <div class="modal-overlay" onclick="closeModal()">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>환불정책</h3>
+                    <button onclick="closeModal()" class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <h4>1. 환불 기준</h4>
+                    <p>수업 시작 전: 전액 환불</p>
+                    <p>수업 시작 후: 잔여 수업일수 기준 비례 환불</p>
+
+                    <h4>2. 환불 요청 절차</h4>
+                    <ul>
+                        <li>전화 또는 이메일로 환불 의사 전달</li>
+                        <li>환불 신청서 작성 및 본인 확인</li>
+                        <li>영업일 기준 5일 이내 처리</li>
+                    </ul>
+
+                    <h4>3. 환불 불가 항목</h4>
+                    <ul>
+                        <li>이미 제공된 수업 및 교재 비용</li>
+                        <li>이벤트/프로모션성 추가 혜택 금액</li>
+                    </ul>
+
+                    <h4>4. 문의</h4>
+                    <p>환불 관련 문의: 02-930-5183 / son070@naver.com</p>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', refundContent);
+}
+
 // 모달 닫기
 function closeModal() {
     const modal = document.querySelector('.modal-overlay');
@@ -744,3 +828,4 @@ function showCurriculumDetail(level) {
 
 // 백투탑 버튼 생성
 createBackToTopButton();
+
