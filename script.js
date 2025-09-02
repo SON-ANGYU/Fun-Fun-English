@@ -319,6 +319,9 @@ document.getElementById('consultationForm').addEventListener('submit', function(
         return;
     }
     
+    // SMS 전송 기능 추가
+    sendConsultationSMS(formData);
+    
     // son070@naver.com으로 이메일 전송
     sendConsultationEmail(formData);
     
@@ -328,6 +331,39 @@ document.getElementById('consultationForm').addEventListener('submit', function(
     // 폼 초기화
     this.reset();
 });
+
+// SMS로 상담 신청 전송
+function sendConsultationSMS(data) {
+    try {
+        const phoneNumber = '010-9212-5183';
+        const message = encodeURIComponent(`Fun-Fun English 상담 신청
+
+신청자: ${data.name}
+연락처: ${data.phone}
+이메일: ${data.email}
+영어 수준: ${getLevelText(data.level)}
+상담 내용: ${data.message}
+
+빠른 시일 내에 연락 부탁드립니다.`);
+        
+        const smsLink = `sms:${phoneNumber}?body=${message}`;
+        
+        // SMS 앱 열기 시도
+        try {
+            window.location.href = smsLink;
+        } catch (error) {
+            console.log('SMS 앱을 열 수 없습니다.');
+        }
+        
+        // 콘솔에 로그 출력
+        console.log('SMS 상담 신청 데이터:', data);
+        console.log('SMS 전화번호:', phoneNumber);
+        console.log('SMS 링크:', smsLink);
+        
+    } catch (error) {
+        console.error('SMS 전송 중 오류 발생:', error);
+    }
+}
 
 // son070@naver.com으로 상담 신청 이메일 전송
 function sendConsultationEmail(data) {
@@ -421,7 +457,7 @@ function showSuccessMessage() {
         z-index: 10000;
         animation: slideInRight 0.5s ease;
     `;
-    successMessage.textContent = '상담 신청이 완료되었습니다! 이메일 클라이언트가 열렸습니다. son070@naver.com으로 전송해주세요. 빠른 시일 내에 연락드리겠습니다.';
+    successMessage.textContent = '상담 신청이 완료되었습니다! SMS 앱이 열렸습니다. 010-9212-5183으로 전송해주세요. 빠른 시일 내에 연락드리겠습니다.';
     
     // CSS 애니메이션 추가
     const style = document.createElement('style');
@@ -468,9 +504,9 @@ function showSuccessMessage() {
 
 // 무료 상담 신청하기 버튼 클릭 시
 function openConsultation() {
-    // 이메일 클라이언트로 연결
-    const subject = encodeURIComponent('Fun-Fun English 무료 상담 신청');
-    const body = encodeURIComponent(`안녕하세요! Fun-Fun English 무료 상담을 신청합니다.
+    // SMS 전송 기능
+    const phoneNumber = '010-9212-5183';
+    const message = encodeURIComponent(`안녕하세요! Fun-Fun English 무료 상담을 신청합니다.
 
 현재 영어 수준: 
 희망 수업: 
@@ -480,8 +516,28 @@ function openConsultation() {
 빠른 시일 내에 연락 부탁드립니다.
 감사합니다.`);
     
-    const mailtoLink = `mailto:son070@naver.com?subject=${subject}&body=${body}`;
-    window.open(mailtoLink);
+    const smsLink = `sms:${phoneNumber}?body=${message}`;
+    
+    // SMS 앱 열기 시도
+    try {
+        window.location.href = smsLink;
+    } catch (error) {
+        // SMS 앱을 열 수 없는 경우 대안 제공
+        console.log('SMS 앱을 열 수 없습니다. 대안을 제공합니다.');
+        
+        // 클립보드에 전화번호와 메시지 복사
+        const smsContent = `전화번호: ${phoneNumber}\n\n메시지:\n${decodeURIComponent(message)}`;
+        
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(smsContent).then(() => {
+                alert(`SMS 앱을 열 수 없습니다.\n\n전화번호와 메시지가 클립보드에 복사되었습니다.\n\n전화번호: ${phoneNumber}\n\n직접 SMS를 보내주세요.`);
+            }).catch(() => {
+                alert(`SMS 앱을 열 수 없습니다.\n\n전화번호: ${phoneNumber}\n\n직접 SMS를 보내주세요.`);
+            });
+        } else {
+            alert(`SMS 앱을 열 수 없습니다.\n\n전화번호: ${phoneNumber}\n\n직접 SMS를 보내주세요.`);
+        }
+    }
 }
 
 // 부드러운 스크롤
