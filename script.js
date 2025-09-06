@@ -299,69 +299,82 @@ document.getElementById('consultationForm').addEventListener('submit', function(
     
     // 폼 데이터 수집
     const formData = {
-        name: document.getElementById('name').value,
-        phone: document.getElementById('phone').value,
-        email: document.getElementById('email').value,
+        name: document.getElementById('name').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        email: document.getElementById('email').value.trim(),
         level: document.getElementById('level').value,
-        message: document.getElementById('message').value
+        message: document.getElementById('message').value.trim()
     };
     
     // 필수 필드 검증
     if (!formData.name || !formData.phone || !formData.email) {
-        alert('이름, 연락처, 이메일은 필수 입력 항목입니다.');
+        showErrorMessage('이름, 연락처, 이메일은 필수 입력 항목입니다.');
         return;
     }
     
     // 이메일 형식 검증
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-        alert('올바른 이메일 형식을 입력해주세요.');
+        showErrorMessage('올바른 이메일 형식을 입력해주세요.');
         return;
     }
     
-    // SMS 전송 기능 추가
-    sendConsultationSMS(formData);
+    // 전화번호 형식 검증
+    const phoneRegex = /^[0-9-+\s()]{10,}$/;
+    if (!phoneRegex.test(formData.phone)) {
+        showErrorMessage('올바른 전화번호 형식을 입력해주세요.');
+        return;
+    }
     
-    // son070@naver.com으로 이메일 전송
-    sendConsultationEmail(formData);
+    // 로딩 상태 표시
+    showLoadingState();
     
-    // 성공 메시지 표시
-    showSuccessMessage();
-    
-    // 폼 초기화
-    this.reset();
+    // Webhook을 통한 데이터 전송
+    sendConsultationToWebhook(formData);
 });
 
-// SMS로 상담 신청 전송
-function sendConsultationSMS(data) {
+// Webhook을 통한 상담 신청 전송
+async function sendConsultationToWebhook(data) {
     try {
-        const phoneNumber = '010-9212-5183';
-        const message = encodeURIComponent(`Fun-Fun English 상담 신청
-
-신청자: ${data.name}
-연락처: ${data.phone}
-이메일: ${data.email}
-영어 수준: ${getLevelText(data.level)}
-상담 내용: ${data.message}
-
-빠른 시일 내에 연락 부탁드립니다.`);
+        // Google Apps Script Webhook URL (실제 URL로 변경 필요)
+        const webhookUrl = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
         
-        const smsLink = `sms:${phoneNumber}?body=${message}`;
+        // 전송할 데이터 구성
+        const payload = {
+            timestamp: new Date().toISOString(),
+            name: data.name,
+            phone: data.phone,
+            email: data.email,
+            level: data.level,
+            levelText: getLevelText(data.level),
+            message: data.message,
+            source: 'website_form'
+        };
         
-        // SMS 앱 열기 시도
-        try {
-            window.location.href = smsLink;
-        } catch (error) {
-            console.log('SMS 앱을 열 수 없습니다.');
+        // POST 요청으로 데이터 전송
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            console.log('상담 신청 전송 성공:', result);
+            showSuccessMessage('상담 신청이 완료되었습니다! 빠른 시일 내에 연락드리겠습니다.');
+            document.getElementById('consultationForm').reset();
+        } else {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        // 콘솔에 로그 출력
-        console.log('SMS 상담 신청 데이터:', data);
-        console.log('SMS 전화번호:', phoneNumber);
-        console.log('SMS 링크:', smsLink);
-        
     } catch (error) {
-        console.error('SMS 전송 중 오류 발생:', error);
+        console.error('상담 신청 전송 중 오류 발생:', error);
+        showErrorMessage('상담 신청 전송에 실패했습니다. 직접 연락해주세요: 02-930-5183');
+        
+        // 백업 방법으로 이메일 전송 시도
+        sendConsultationEmail(data);
     }
 }
 
@@ -434,10 +447,83 @@ function getLevelText(level) {
     }
 }
 
+// 로딩 상태 표시
+function showLoadingState() {
+    const submitButton = document.querySelector('.submit-button');
+    const originalText = submitButton.textContent;
+    
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 전송 중...';
+    submitButton.style.opacity = '0.7';
+    
+    // 30초 후 타임아웃
+    setTimeout(() => {
+        if (submitButton.disabled) {
+            submitButton.disabled = false;
+            submitButton.textContent = originalText;
+            submitButton.style.opacity = '1';
+            showErrorMessage('전송 시간이 초과되었습니다. 다시 시도해주세요.');
+        }
+    }, 30000);
+}
+
+// 로딩 상태 해제
+function hideLoadingState() {
+    const submitButton = document.querySelector('.submit-button');
+    submitButton.disabled = false;
+    submitButton.textContent = '상담 신청하기';
+    submitButton.style.opacity = '1';
+}
+
+// 에러 메시지 표시
+function showErrorMessage(message) {
+    hideLoadingState();
+    
+    // 기존 메시지 제거
+    const existingMessage = document.querySelector('.error-message, .success-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // 에러 메시지 생성
+    const errorMessage = document.createElement('div');
+    errorMessage.className = 'error-message';
+    errorMessage.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #ef4444;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+        z-index: 10000;
+        animation: slideInRight 0.5s ease;
+        max-width: 400px;
+        word-wrap: break-word;
+    `;
+    errorMessage.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+    
+    document.body.appendChild(errorMessage);
+    
+    // CSS 애니메이션 추가
+    addMessageAnimations();
+    
+    // 5초 후 메시지 제거
+    setTimeout(() => {
+        errorMessage.style.animation = 'slideOutRight 0.5s ease';
+        setTimeout(() => {
+            errorMessage.remove();
+        }, 500);
+    }, 5000);
+}
+
 // 성공 메시지 표시
-function showSuccessMessage() {
-    // 기존 성공 메시지가 있다면 제거
-    const existingMessage = document.querySelector('.success-message');
+function showSuccessMessage(message = '상담 신청이 완료되었습니다! 빠른 시일 내에 연락드리겠습니다.') {
+    hideLoadingState();
+    
+    // 기존 메시지 제거
+    const existingMessage = document.querySelector('.success-message, .error-message');
     if (existingMessage) {
         existingMessage.remove();
     }
@@ -456,11 +542,31 @@ function showSuccessMessage() {
         box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
         z-index: 10000;
         animation: slideInRight 0.5s ease;
+        max-width: 400px;
+        word-wrap: break-word;
     `;
-    successMessage.textContent = '상담 신청이 완료되었습니다! SMS 앱이 열렸습니다. 010-9212-5183으로 전송해주세요. 빠른 시일 내에 연락드리겠습니다.';
+    successMessage.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+    
+    document.body.appendChild(successMessage);
     
     // CSS 애니메이션 추가
+    addMessageAnimations();
+    
+    // 5초 후 메시지 제거
+    setTimeout(() => {
+        successMessage.style.animation = 'slideOutRight 0.5s ease';
+        setTimeout(() => {
+            successMessage.remove();
+        }, 500);
+    }, 5000);
+}
+
+// 메시지 애니메이션 CSS 추가
+function addMessageAnimations() {
+    if (document.querySelector('#message-animations')) return;
+    
     const style = document.createElement('style');
+    style.id = 'message-animations';
     style.textContent = `
         @keyframes slideInRight {
             from {
@@ -472,22 +578,7 @@ function showSuccessMessage() {
                 opacity: 1;
             }
         }
-    `;
-    document.head.appendChild(style);
-    
-    document.body.appendChild(successMessage);
-    
-    // 5초 후 메시지 제거
-    setTimeout(() => {
-        successMessage.style.animation = 'slideOutRight 0.5s ease';
-        setTimeout(() => {
-            successMessage.remove();
-        }, 500);
-    }, 5000);
-    
-    // slideOutRight 애니메이션 추가
-    const slideOutStyle = document.createElement('style');
-    slideOutStyle.textContent = `
+        
         @keyframes slideOutRight {
             from {
                 transform: translateX(0);
@@ -498,8 +589,17 @@ function showSuccessMessage() {
                 opacity: 0;
             }
         }
+        
+        .fa-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     `;
-    document.head.appendChild(slideOutStyle);
+    document.head.appendChild(style);
 }
 
 // 무료 상담 신청하기 버튼 클릭 시
