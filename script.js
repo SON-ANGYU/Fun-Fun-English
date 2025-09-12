@@ -614,66 +614,69 @@ function openConsultation() {
     }
 }
 
-// EmailJS 설정값
+// EmailJS 설정
 const EMAILJS_PUBLIC_KEY = 'ucPipWl-_PPBaUazq';
 const EMAILJS_SERVICE_ID = 'service_pmire25';
 const EMAILJS_TEMPLATE_ID = 'template_fx2mict';
 
- emailjs.init(EMAILJS_PUBLIC_KEY);
+emailjs.init(EMAILJS_PUBLIC_KEY);
 
- const form = document.getElementById('consultationForm');
- const statusEl = document.getElementById('status');
+const form = document.getElementById('consultationForm');
+const statusEl = document.getElementById('status');
 
- form.addEventListener('submit', function (e) {
-   e.preventDefault();
-   alert('상담 신청이 제출되었습니다!');
+form.addEventListener('submit', function (e) {
+  e.preventDefault();
 
-   const name = document.getElementById('name').value.trim();
-   const phone = document.getElementById('phone').value.trim();
-   const email = document.getElementById('email').value.trim();
-   const level = document.getElementById('level').value;
-   const message = document.getElementById('message').value.trim();
+  const name = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const level = document.getElementById('level').value;
+  const message = document.getElementById('message').value.trim();
 
-   if (!name || !phone || !email || !level || !message) {
+  if (!name || !phone || !email || !level || !message) {
     alert('모든 항목을 입력해 주세요.');
     return;
   }
 
-   const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase());
+  const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase());
 
-   if (isMobile) {
-     // 모바일 → SMS 앱 실행
-     const smsBody = `안녕하세요! Fun-Fun English 무료 상담을 신청합니다.\n\n이름: ${name}\n연락처: ${phone}\n이메일: ${email}\n영어 수준: ${level}\n\n상담 내용:\n${message}`;
-     const smsLink = `sms:01092125183?body=${encodeURIComponent(smsBody)}`;
-     window.location.href = smsLink;
-   } else {
-     // 데스크탑 → EmailJS 메일 전송
-     const templateParams = {
-       to_email: 'son07009@gmail.com',
-       from_name: name,
-       reply_to: email,
-       contact_phone: phone,
-       level: level,
-       message: message,
-       submitted_at: new Date().toLocaleString()
-     };
+  if (isMobile) {
+    // 모바일: SMS 실행
+    const smsBody = `안녕하세요! Fun-Fun English 무료 상담을 신청합니다.\n\n이름: ${name}\n연락처: ${phone}\n이메일: ${email}\n영어 수준: ${level}\n\n상담 내용:\n${message}`;
+    const smsLink = `sms:01092125183?body=${encodeURIComponent(smsBody)}`;
+    alert('상담 신청이 제출되었습니다! 문자앱으로 이동합니다.');
+    window.location.href = smsLink;
+  } else {
+    // 데스크탑: EmailJS 전송
+    const templateParams = {
+      to_email: 'son07009@gmail.com',
+      from_name: name,
+      reply_to: email,
+      contact_phone: phone,
+      level: level,
+      message: message,
+      submitted_at: new Date().toLocaleString()
+    };
 
-     statusEl.textContent = '메일 전송 중...';
-     statusEl.className = 'status';
+    statusEl.textContent = '메일 전송 중...';
+    statusEl.className = 'status';
 
-     emailjs.send('service_pmire25', 'template_fx2mict', templateParams)
-  .then(() => {
-    statusEl.textContent = '📧 상담 신청이 성공적으로 접수되었습니다!';
-    statusEl.className = 'status success';
-    form.reset();
-  })
-  .catch((err) => {
-    console.error(err);
-    statusEl.textContent = '메일 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.';
-    statusEl.className = 'status error';
-  });
-   }
- });
+    // ✅ 여기에서 메일 전송이 실제 수행됩니다
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+      .then(() => {
+        statusEl.textContent = '📧 상담 신청이 성공적으로 접수되었습니다!';
+        statusEl.className = 'status success';
+        alert('상담 신청이 성공적으로 접수되었습니다!');
+        form.reset();
+      })
+      .catch((err) => {
+        console.error('EmailJS 전송 실패:', err);
+        alert('상담 신청 전송에 실패했습니다. 직접 연락해주세요: 02-930-5183');
+        statusEl.className = 'status error';
+        statusEl.textContent = '메일 전송 실패';
+      });
+  }
+});
 
 // 부드러운 스크롤
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -765,42 +768,15 @@ function createBackToTopButton() {
 
 // 히어로 슬라이더 기능
 let currentSlideIndex = 0;
-let slides = [];
-let dots = [];
 let slideInterval;
 
-function initSlider() {
-    slides = document.querySelectorAll('.slide');
-    dots = document.querySelectorAll('.dot');
+// 전역 함수로 정의 (HTML에서 호출하기 위해)
+window.changeSlide = function(direction) {
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
     
-    // 슬라이더가 존재하는지 확인
-    if (slides.length === 0) {
-        console.log('슬라이더 요소를 찾을 수 없습니다.');
-        return;
-    }
+    if (slides.length === 0) return;
     
-    // 첫 번째 슬라이드 활성화
-    showSlide(0);
-    
-    // 자동 슬라이드 시작
-    startAutoSlide();
-}
-
-function showSlide(index) {
-    // 모든 슬라이드 숨기기
-    slides.forEach(slide => slide.classList.remove('active'));
-    dots.forEach(dot => dot.classList.remove('active'));
-    
-    // 현재 슬라이드 보이기
-    if (slides[index]) {
-        slides[index].classList.add('active');
-        if (dots[index]) {
-            dots[index].classList.add('active');
-        }
-    }
-}
-
-function changeSlide(direction) {
     currentSlideIndex += direction;
     
     if (currentSlideIndex >= slides.length) {
@@ -810,11 +786,39 @@ function changeSlide(direction) {
     }
     
     showSlide(currentSlideIndex);
-}
+};
 
-function currentSlide(index) {
+window.currentSlide = function(index) {
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+    
+    if (slides.length === 0) return;
+    
     currentSlideIndex = index - 1;
     showSlide(currentSlideIndex);
+};
+
+function showSlide(index) {
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+    
+    // 모든 슬라이드 숨기기
+    slides.forEach((slide, i) => {
+        if (i === index) {
+            slide.classList.add('active');
+        } else {
+            slide.classList.remove('active');
+        }
+    });
+    
+    // 모든 도트 비활성화
+    dots.forEach((dot, i) => {
+        if (i === index) {
+            dot.classList.add('active');
+        } else {
+            dot.classList.remove('active');
+        }
+    });
 }
 
 function startAutoSlide() {
@@ -825,7 +829,10 @@ function startAutoSlide() {
     
     // 자동 슬라이드 (5초마다)
     slideInterval = setInterval(() => {
-        changeSlide(1);
+        const slides = document.querySelectorAll('.slide');
+        if (slides.length > 0) {
+            changeSlide(1);
+        }
     }, 5000);
 }
 
@@ -837,16 +844,38 @@ function stopAutoSlide() {
 }
 
 // 페이지 로드 시 슬라이더 초기화
-document.addEventListener('DOMContentLoaded', () => {
-    initSlider();
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM 로드 완료');
+    
+    // 슬라이더 요소 확인
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+    console.log('슬라이드 개수:', slides.length);
+    console.log('도트 개수:', dots.length);
+    
+    // 첫 번째 슬라이드 활성화
+    showSlide(0);
+    
+    // 자동 슬라이드 시작
+    startAutoSlide();
+    
+    // 마우스 호버 이벤트
+    const heroSection = document.querySelector('.hero');
+    if (heroSection) {
+        heroSection.addEventListener('mouseenter', stopAutoSlide);
+        heroSection.addEventListener('mouseleave', startAutoSlide);
+        console.log('마우스 호버 이벤트 등록 완료');
+    }
+    
+    // 수동 테스트를 위한 키보드 이벤트
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft') {
+            changeSlide(-1);
+        } else if (e.key === 'ArrowRight') {
+            changeSlide(1);
+        }
+    });
 });
-
-// 마우스 호버 시 자동 슬라이드 일시정지
-const heroSection = document.querySelector('.hero');
-if (heroSection) {
-    heroSection.addEventListener('mouseenter', stopAutoSlide);
-    heroSection.addEventListener('mouseleave', startAutoSlide);
-}
 
 // 개인정보처리방침 표시
 function showPrivacyPolicy() {
