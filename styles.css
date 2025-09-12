@@ -780,6 +780,16 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
 }
+.status {
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  .status.success {
+    color: green;
+  }
+  .status.error {
+    color: red;
+  }
 
 /* 챗봇 */
 .chatbot {

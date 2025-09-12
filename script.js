@@ -603,41 +603,65 @@ function addMessageAnimations() {
 }
 
 // 무료 상담 신청하기 버튼 클릭 시
-function openConsultation() {
-    const phoneNumber = '01092125183';
-    const message = `안녕하세요! Fun-Fun English 무료 상담을 신청합니다.\n\n현재 영어 수준:\n희망 수업:\n연락 가능 시간:\n추가 문의사항:\n\n빠른 시일 내에 연락 부탁드립니다.\n감사합니다.`;
-    const encodedMsg = encodeURIComponent(message);
+ // EmailJS 설정값
+ const EMAILJS_PUBLIC_KEY = 'ucPipWl-_PPBaUazq';
+ const EMAILJS_SERVICE_ID = 'service_pmire25';
+ const EMAILJS_TEMPLATE_ID = 'template_fx2mict';
 
-    const userAgent = navigator.userAgent.toLowerCase();
-    const isMobile = /android|iphone|ipad|ipod/i.test(userAgent);
+ emailjs.init(EMAILJS_PUBLIC_KEY);
 
-    let smsUrl;
+ const form = document.getElementById('consultForm');
+ const statusEl = document.getElementById('status');
 
-    if (isMobile) {
-        // Android 일부 기기에서는 전화번호 없이 ?body만 전달
-        if (/android/.test(userAgent)) {
-            smsUrl = `sms:${phoneNumber}?body=${encodedMsg}`;
-        } else {
-            // iOS (전화번호+body 조합)
-            smsUrl = `sms:${phoneNumber}&body=${encodedMsg}`;
-        }
+ form.addEventListener('submit', function (e) {
+   e.preventDefault();
 
-        // SMS 앱 열기 시도
-        window.location.href = smsUrl;
-    } else {
-        // 데스크탑에서는 클립보드로 복사 안내
-        const smsContent = `전화번호: ${phoneNumber}\n\n메시지:\n${message}`;
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(smsContent).then(() => {
-                alert(`SMS 앱은 PC에서 실행되지 않습니다.\n\n전화번호와 메시지가 클립보드에 복사되었습니다.\n스마트폰에서 직접 SMS를 보내주세요.\n\n전화번호: ${phoneNumber}`);
-            }).catch(() => {
-                alert(`SMS 앱을 실행할 수 없습니다.\n전화번호: ${phoneNumber}\n\n직접 SMS를 보내주세요.`);
-            });
-        } else {
-            alert(`SMS 앱을 실행할 수 없습니다.\n전화번호: ${phoneNumber}\n\n직접 SMS를 보내주세요.`);
-        }
-    }
-}
+   const name = document.getElementById('name').value.trim();
+   const phone = document.getElementById('phone').value.trim();
+   const email = document.getElementById('email').value.trim();
+   const level = document.getElementById('level').value;
+   const message = document.getElementById('message').value.trim();
+
+   if (!name || !phone || !email || !level || !message) {
+    alert('모든 항목을 입력해 주세요.');
+    return;
+  }
+
+   const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase());
+
+   if (isMobile) {
+     // 모바일 → SMS 앱 실행
+     const smsBody = `안녕하세요! Fun-Fun English 무료 상담을 신청합니다.\n\n이름: ${name}\n연락처: ${phone}\n이메일: ${email}\n영어 수준: ${level}\n\n상담 내용:\n${message}`;
+     const smsLink = `sms:01092125183?body=${encodeURIComponent(smsBody)}`;
+     window.location.href = smsLink;
+   } else {
+     // 데스크탑 → EmailJS 메일 전송
+     const templateParams = {
+       to_email: 'son070@naver.com',
+       from_name: name,
+       reply_to: email,
+       contact_phone: phone,
+       level: level,
+       message: message,
+       submitted_at: new Date().toLocaleString()
+     };
+
+     statusEl.textContent = '메일 전송 중...';
+     statusEl.className = 'status';
+
+     emailjs.send('service_pmire25', 'template_fx2mict', templateParams)
+  .then(() => {
+    statusEl.textContent = '📧 상담 신청이 성공적으로 접수되었습니다!';
+    statusEl.className = 'status success';
+    form.reset();
+  })
+  .catch((err) => {
+    console.error(err);
+    statusEl.textContent = '메일 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+    statusEl.className = 'status error';
+  });
+   }
+ });
 
 // 부드러운 스크롤
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
