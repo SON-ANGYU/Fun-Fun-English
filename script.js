@@ -604,38 +604,37 @@ function addMessageAnimations() {
 
 // 무료 상담 신청하기 버튼 클릭 시
 function openConsultation() {
-    // SMS 전송 기능
-    const phoneNumber = '010-9212-5183';
-    const message = encodeURIComponent(`안녕하세요! Fun-Fun English 무료 상담을 신청합니다.
+    const phoneNumber = '01092125183';
+    const message = `안녕하세요! Fun-Fun English 무료 상담을 신청합니다.\n\n현재 영어 수준:\n희망 수업:\n연락 가능 시간:\n추가 문의사항:\n\n빠른 시일 내에 연락 부탁드립니다.\n감사합니다.`;
+    const encodedMsg = encodeURIComponent(message);
 
-현재 영어 수준: 
-희망 수업: 
-연락 가능 시간: 
-추가 문의사항: 
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isMobile = /android|iphone|ipad|ipod/i.test(userAgent);
 
-빠른 시일 내에 연락 부탁드립니다.
-감사합니다.`);
-    
-    const smsLink = `sms:${phoneNumber}?body=${message}`;
-    
-    // SMS 앱 열기 시도
-    try {
-        window.location.href = smsLink;
-    } catch (error) {
-        // SMS 앱을 열 수 없는 경우 대안 제공
-        console.log('SMS 앱을 열 수 없습니다. 대안을 제공합니다.');
-        
-        // 클립보드에 전화번호와 메시지 복사
-        const smsContent = `전화번호: ${phoneNumber}\n\n메시지:\n${decodeURIComponent(message)}`;
-        
+    let smsUrl;
+
+    if (isMobile) {
+        // Android 일부 기기에서는 전화번호 없이 ?body만 전달
+        if (/android/.test(userAgent)) {
+            smsUrl = `sms:${phoneNumber}?body=${encodedMsg}`;
+        } else {
+            // iOS (전화번호+body 조합)
+            smsUrl = `sms:${phoneNumber}&body=${encodedMsg}`;
+        }
+
+        // SMS 앱 열기 시도
+        window.location.href = smsUrl;
+    } else {
+        // 데스크탑에서는 클립보드로 복사 안내
+        const smsContent = `전화번호: ${phoneNumber}\n\n메시지:\n${message}`;
         if (navigator.clipboard) {
             navigator.clipboard.writeText(smsContent).then(() => {
-                alert(`SMS 앱을 열 수 없습니다.\n\n전화번호와 메시지가 클립보드에 복사되었습니다.\n\n전화번호: ${phoneNumber}\n\n직접 SMS를 보내주세요.`);
+                alert(`SMS 앱은 PC에서 실행되지 않습니다.\n\n전화번호와 메시지가 클립보드에 복사되었습니다.\n스마트폰에서 직접 SMS를 보내주세요.\n\n전화번호: ${phoneNumber}`);
             }).catch(() => {
-                alert(`SMS 앱을 열 수 없습니다.\n\n전화번호: ${phoneNumber}\n\n직접 SMS를 보내주세요.`);
+                alert(`SMS 앱을 실행할 수 없습니다.\n전화번호: ${phoneNumber}\n\n직접 SMS를 보내주세요.`);
             });
         } else {
-            alert(`SMS 앱을 열 수 없습니다.\n\n전화번호: ${phoneNumber}\n\n직접 SMS를 보내주세요.`);
+            alert(`SMS 앱을 실행할 수 없습니다.\n전화번호: ${phoneNumber}\n\n직접 SMS를 보내주세요.`);
         }
     }
 }
@@ -985,3 +984,4 @@ function showCurriculumDetail(level) {
 // 백투탑 버튼 생성
 createBackToTopButton();
 
+ 
