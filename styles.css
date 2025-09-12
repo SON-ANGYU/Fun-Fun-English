@@ -160,10 +160,12 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 1;
 }
 
 .slide.active {
     opacity: 1;
+    z-index: 2;
 }
 
 .hero-overlay {
@@ -221,7 +223,8 @@ body {
     display: flex;
     justify-content: space-between;
     padding: 0 2rem;
-    z-index: 10;
+    z-index: 20;
+    pointer-events: none;
 }
 
 .nav-btn {
@@ -235,6 +238,7 @@ body {
     font-size: 1.5rem;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    pointer-events: auto;
 }
 
 .nav-btn:hover {
@@ -250,7 +254,7 @@ body {
     transform: translateX(-50%);
     display: flex;
     gap: 1rem;
-    z-index: 10;
+    z-index: 20;
 }
 
 .dot {

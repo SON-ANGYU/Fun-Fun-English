@@ -603,10 +603,21 @@ function addMessageAnimations() {
 }
 
 // 무료 상담 신청하기 버튼 클릭 시
- // EmailJS 설정값
- const EMAILJS_PUBLIC_KEY = 'ucPipWl-_PPBaUazq';
- const EMAILJS_SERVICE_ID = 'service_pmire25';
- const EMAILJS_TEMPLATE_ID = 'template_fx2mict';
+function openConsultation() {
+    // 연락처 섹션으로 스크롤
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+        contactSection.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+}
+
+// EmailJS 설정값
+const EMAILJS_PUBLIC_KEY = 'ucPipWl-_PPBaUazq';
+const EMAILJS_SERVICE_ID = 'service_pmire25';
+const EMAILJS_TEMPLATE_ID = 'template_fx2mict';
 
  emailjs.init(EMAILJS_PUBLIC_KEY);
 
@@ -754,8 +765,26 @@ function createBackToTopButton() {
 
 // 히어로 슬라이더 기능
 let currentSlideIndex = 0;
-const slides = document.querySelectorAll('.slide');
-const dots = document.querySelectorAll('.dot');
+let slides = [];
+let dots = [];
+let slideInterval;
+
+function initSlider() {
+    slides = document.querySelectorAll('.slide');
+    dots = document.querySelectorAll('.dot');
+    
+    // 슬라이더가 존재하는지 확인
+    if (slides.length === 0) {
+        console.log('슬라이더 요소를 찾을 수 없습니다.');
+        return;
+    }
+    
+    // 첫 번째 슬라이드 활성화
+    showSlide(0);
+    
+    // 자동 슬라이드 시작
+    startAutoSlide();
+}
 
 function showSlide(index) {
     // 모든 슬라이드 숨기기
@@ -765,7 +794,9 @@ function showSlide(index) {
     // 현재 슬라이드 보이기
     if (slides[index]) {
         slides[index].classList.add('active');
-        dots[index].classList.add('active');
+        if (dots[index]) {
+            dots[index].classList.add('active');
+        }
     }
 }
 
@@ -786,10 +817,36 @@ function currentSlide(index) {
     showSlide(currentSlideIndex);
 }
 
-// 자동 슬라이드 (5초마다)
-setInterval(() => {
-    changeSlide(1);
-}, 5000);
+function startAutoSlide() {
+    // 기존 인터벌 정리
+    if (slideInterval) {
+        clearInterval(slideInterval);
+    }
+    
+    // 자동 슬라이드 (5초마다)
+    slideInterval = setInterval(() => {
+        changeSlide(1);
+    }, 5000);
+}
+
+function stopAutoSlide() {
+    if (slideInterval) {
+        clearInterval(slideInterval);
+        slideInterval = null;
+    }
+}
+
+// 페이지 로드 시 슬라이더 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    initSlider();
+});
+
+// 마우스 호버 시 자동 슬라이드 일시정지
+const heroSection = document.querySelector('.hero');
+if (heroSection) {
+    heroSection.addEventListener('mouseenter', stopAutoSlide);
+    heroSection.addEventListener('mouseleave', startAutoSlide);
+}
 
 // 개인정보처리방침 표시
 function showPrivacyPolicy() {
