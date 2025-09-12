@@ -610,11 +610,12 @@ function addMessageAnimations() {
 
  emailjs.init(EMAILJS_PUBLIC_KEY);
 
- const form = document.getElementById('consultForm');
+ const form = document.getElementById('consultationForm');
  const statusEl = document.getElementById('status');
 
  form.addEventListener('submit', function (e) {
    e.preventDefault();
+   alert('상담 신청이 제출되었습니다!');
 
    const name = document.getElementById('name').value.trim();
    const phone = document.getElementById('phone').value.trim();
@@ -637,7 +638,7 @@ function addMessageAnimations() {
    } else {
      // 데스크탑 → EmailJS 메일 전송
      const templateParams = {
-       to_email: 'son070@naver.com',
+       to_email: 'son07009@gmail.com',
        from_name: name,
        reply_to: email,
        contact_phone: phone,
