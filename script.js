@@ -293,389 +293,44 @@ function getBotResponse(userMessage) {
     }
 }
 
-// 상담 신청 폼 제출
-document.getElementById('consultationForm').addEventListener('submit', function(e) {
+// 상담신청 폼 제출 250915_chatgpt 
+
+document.getElementById('consultationForm').addEventListener('submit', function (e) {
     e.preventDefault();
-    
-    // 폼 데이터 수집
-    const formData = {
-        name: document.getElementById('name').value.trim(),
-        phone: document.getElementById('phone').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        level: document.getElementById('level').value,
-        message: document.getElementById('message').value.trim()
-    };
-    
-    // 필수 필드 검증
-    if (!formData.name || !formData.phone || !formData.email) {
-        showErrorMessage('이름, 연락처, 이메일은 필수 입력 항목입니다.');
+
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const level = document.getElementById('level').value;
+    const message = document.getElementById('message').value.trim();
+
+    if (!name || !phone || !email || !level || !message) {
+        alert('모든 항목을 입력해 주세요.');
         return;
     }
-    
-    // 이메일 형식 검증
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-        showErrorMessage('올바른 이메일 형식을 입력해주세요.');
-        return;
-    }
-    
-    // 전화번호 형식 검증
-    const phoneRegex = /^[0-9-+\s()]{10,}$/;
-    if (!phoneRegex.test(formData.phone)) {
-        showErrorMessage('올바른 전화번호 형식을 입력해주세요.');
-        return;
-    }
-    
-    // 로딩 상태 표시
-    showLoadingState();
-    
-    // Webhook을 통한 데이터 전송
-    sendConsultationToWebhook(formData);
-});
 
-// Webhook을 통한 상담 신청 전송
-async function sendConsultationToWebhook(data) {
-    try {
-        // Google Apps Script Webhook URL (실제 URL로 변경 필요)
-        const webhookUrl = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
-        
-        // 전송할 데이터 구성
-        const payload = {
-            timestamp: new Date().toISOString(),
-            name: data.name,
-            phone: data.phone,
-            email: data.email,
-            level: data.level,
-            levelText: getLevelText(data.level),
-            message: data.message,
-            source: 'website_form'
-        };
-        
-        // POST 요청으로 데이터 전송
-        const response = await fetch(webhookUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload)
-        });
-        
-        if (response.ok) {
-            const result = await response.json();
-            console.log('상담 신청 전송 성공:', result);
-            showSuccessMessage('상담 신청이 완료되었습니다! 빠른 시일 내에 연락드리겠습니다.');
-            document.getElementById('consultationForm').reset();
-        } else {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-    } catch (error) {
-        console.error('상담 신청 전송 중 오류 발생:', error);
-        showErrorMessage('상담 신청 전송에 실패했습니다. 직접 연락해주세요: 02-930-5183');
-        
-        // 백업 방법으로 이메일 전송 시도
-        sendConsultationEmail(data);
-    }
-}
+    // 메일 본문 구성
+    const mailSubject = `Fun-Fun English 상담 신청 - ${name}`;
+    const mailBody = `
+안녕하세요! Fun-Fun English 무료 상담 신청입니다.
 
-// son070@naver.com으로 상담 신청 이메일 전송
-function sendConsultationEmail(data) {
-    try {
-        // 이메일 클라이언트로 연결
-        const subject = encodeURIComponent('Fun-Fun English 상담 신청 - ' + data.name);
-        const body = encodeURIComponent(`안녕하세요! Fun-Fun English 상담 신청입니다.
+이름: ${name}
+연락처: ${phone}
+이메일: ${email}
+영어 수준: ${level}
+상담 내용:
+${message}
 
-신청자 정보:
-- 이름: ${data.name}
-- 연락처: ${data.phone}
-- 이메일: ${data.email}
-- 현재 영어 수준: ${getLevelText(data.level)}
-- 상담 내용: ${data.message}
+감사합니다.`;
 
-빠른 시일 내에 연락 부탁드립니다.
-감사합니다.`);
-        
-        const mailtoLink = `mailto:son070@naver.com?subject=${subject}&body=${body}`;
-        
-        // 이메일 클라이언트 열기
-        const emailWindow = window.open(mailtoLink);
-        
-        // 이메일 클라이언트가 열리지 않은 경우 대안 제공
-        if (!emailWindow || emailWindow.closed || typeof emailWindow.closed == 'undefined') {
-            // 클립보드에 이메일 내용 복사
-            const emailContent = `제목: Fun-Fun English 상담 신청 - ${data.name}
+    // 메일 전송용 mailto 링크
+    const mailtoLink = `mailto:son070@naver.com?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}`;
 
-안녕하세요! Fun-Fun English 상담 신청입니다.
+    // 사용자에게 알림
+    alert('이메일 앱이 열립니다. 메일을 전송해 주세요.');
 
-신청자 정보:
-- 이름: ${data.name}
-- 연락처: ${data.phone}
-- 이메일: ${data.email}
-- 현재 영어 수준: ${getLevelText(data.level)}
-- 상담 내용: ${data.message}
-
-빠른 시일 내에 연락 부탁드립니다.
-감사합니다.
-
-수신자: son070@naver.com`;
-            
-            navigator.clipboard.writeText(emailContent).then(() => {
-                alert('이메일 클라이언트를 열 수 없습니다. 이메일 내용이 클립보드에 복사되었습니다.\n\nson070@naver.com으로 직접 이메일을 보내주세요.');
-            }).catch(() => {
-                alert('이메일 클라이언트를 열 수 없습니다. 직접 son070@naver.com으로 연락해주세요.');
-            });
-        }
-        
-        // 콘솔에 로그 출력
-        console.log('상담 신청 데이터:', data);
-        console.log('이메일 계정: son070@naver.com으로 전송됨');
-        console.log('이메일 링크:', mailtoLink);
-        
-    } catch (error) {
-        console.error('이메일 전송 중 오류 발생:', error);
-        alert('이메일 전송 중 오류가 발생했습니다. 직접 son070@naver.com으로 연락해주세요.');
-    }
-}
-
-// 영어 수준 텍스트 변환
-function getLevelText(level) {
-    switch(level) {
-        case 'beginner': return '초급';
-        case 'intermediate': return '중급';
-        case 'advanced': return '고급';
-        default: return '미선택';
-    }
-}
-
-// 로딩 상태 표시
-function showLoadingState() {
-    const submitButton = document.querySelector('.submit-button');
-    const originalText = submitButton.textContent;
-    
-    submitButton.disabled = true;
-    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 전송 중...';
-    submitButton.style.opacity = '0.7';
-    
-    // 30초 후 타임아웃
-    setTimeout(() => {
-        if (submitButton.disabled) {
-            submitButton.disabled = false;
-            submitButton.textContent = originalText;
-            submitButton.style.opacity = '1';
-            showErrorMessage('전송 시간이 초과되었습니다. 다시 시도해주세요.');
-        }
-    }, 30000);
-}
-
-// 로딩 상태 해제
-function hideLoadingState() {
-    const submitButton = document.querySelector('.submit-button');
-    submitButton.disabled = false;
-    submitButton.textContent = '상담 신청하기';
-    submitButton.style.opacity = '1';
-}
-
-// 에러 메시지 표시
-function showErrorMessage(message) {
-    hideLoadingState();
-    
-    // 기존 메시지 제거
-    const existingMessage = document.querySelector('.error-message, .success-message');
-    if (existingMessage) {
-        existingMessage.remove();
-    }
-    
-    // 에러 메시지 생성
-    const errorMessage = document.createElement('div');
-    errorMessage.className = 'error-message';
-    errorMessage.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #ef4444;
-        color: white;
-        padding: 1rem 2rem;
-        border-radius: 10px;
-        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
-        z-index: 10000;
-        animation: slideInRight 0.5s ease;
-        max-width: 400px;
-        word-wrap: break-word;
-    `;
-    errorMessage.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
-    
-    document.body.appendChild(errorMessage);
-    
-    // CSS 애니메이션 추가
-    addMessageAnimations();
-    
-    // 5초 후 메시지 제거
-    setTimeout(() => {
-        errorMessage.style.animation = 'slideOutRight 0.5s ease';
-        setTimeout(() => {
-            errorMessage.remove();
-        }, 500);
-    }, 5000);
-}
-
-// 성공 메시지 표시
-function showSuccessMessage(message = '상담 신청이 완료되었습니다! 빠른 시일 내에 연락드리겠습니다.') {
-    hideLoadingState();
-    
-    // 기존 메시지 제거
-    const existingMessage = document.querySelector('.success-message, .error-message');
-    if (existingMessage) {
-        existingMessage.remove();
-    }
-    
-    // 성공 메시지 생성
-    const successMessage = document.createElement('div');
-    successMessage.className = 'success-message';
-    successMessage.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #10b981;
-        color: white;
-        padding: 1rem 2rem;
-        border-radius: 10px;
-        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
-        z-index: 10000;
-        animation: slideInRight 0.5s ease;
-        max-width: 400px;
-        word-wrap: break-word;
-    `;
-    successMessage.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
-    
-    document.body.appendChild(successMessage);
-    
-    // CSS 애니메이션 추가
-    addMessageAnimations();
-    
-    // 5초 후 메시지 제거
-    setTimeout(() => {
-        successMessage.style.animation = 'slideOutRight 0.5s ease';
-        setTimeout(() => {
-            successMessage.remove();
-        }, 500);
-    }, 5000);
-}
-
-// 메시지 애니메이션 CSS 추가
-function addMessageAnimations() {
-    if (document.querySelector('#message-animations')) return;
-    
-    const style = document.createElement('style');
-    style.id = 'message-animations';
-    style.textContent = `
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        @keyframes slideOutRight {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-        }
-        
-        .fa-spinner {
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-    `;
-    document.head.appendChild(style);
-}
-
-// 무료 상담 신청하기 버튼 클릭 시
-function openConsultation() {
-    // 연락처 섹션으로 스크롤
-    const contactSection = document.getElementById('contact');
-    if (contactSection) {
-        contactSection.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
-    }
-}
-
-// EmailJS 설정
-const EMAILJS_PUBLIC_KEY = 'ucPipWl-_PPBaUazq';
-const EMAILJS_SERVICE_ID = 'service_pmire25';
-const EMAILJS_TEMPLATE_ID = 'template_fx2mict';
-
-emailjs.init(EMAILJS_PUBLIC_KEY);
-
-const form = document.getElementById('consultationForm');
-const statusEl = document.getElementById('status');
-
-form.addEventListener('submit', function (e) {
-  e.preventDefault();
-
-  const name = document.getElementById('name').value.trim();
-  const phone = document.getElementById('phone').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const level = document.getElementById('level').value;
-  const message = document.getElementById('message').value.trim();
-
-  if (!name || !phone || !email || !level || !message) {
-    alert('모든 항목을 입력해 주세요.');
-    return;
-  }
-
-  const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase());
-
-  if (isMobile) {
-    // 모바일: SMS 실행
-    const smsBody = `안녕하세요! Fun-Fun English 무료 상담을 신청합니다.\n\n이름: ${name}\n연락처: ${phone}\n이메일: ${email}\n영어 수준: ${level}\n\n상담 내용:\n${message}`;
-    const smsLink = `sms:01092125183?body=${encodeURIComponent(smsBody)}`;
-    alert('상담 신청이 제출되었습니다! 문자앱으로 이동합니다.');
-    window.location.href = smsLink;
-  } else {
-    // 데스크탑: EmailJS 전송
-    const templateParams = {
-      to_email: 'son07009@gmail.com',
-      from_name: name,
-      reply_to: email,
-      contact_phone: phone,
-      level: level,
-      message: message,
-      submitted_at: new Date().toLocaleString()
-    };
-
-    statusEl.textContent = '메일 전송 중...';
-    statusEl.className = 'status';
-
-    // ✅ 여기에서 메일 전송이 실제 수행됩니다
-    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
-      .then(() => {
-        statusEl.textContent = '📧 상담 신청이 성공적으로 접수되었습니다!';
-        statusEl.className = 'status success';
-        alert('상담 신청이 성공적으로 접수되었습니다!');
-        form.reset();
-      })
-      .catch((err) => {
-        console.error('EmailJS 전송 실패:', err);
-        alert('상담 신청 전송에 실패했습니다. 직접 연락해주세요: 02-930-5183');
-        statusEl.className = 'status error';
-        statusEl.textContent = '메일 전송 실패';
-      });
-  }
+    // 이메일 클라이언트 열기
+    window.location.href = mailtoLink;
 });
 
 // 부드러운 스크롤
