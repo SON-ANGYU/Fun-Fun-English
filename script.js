@@ -293,45 +293,60 @@ function getBotResponse(userMessage) {
     }
 }
 
-// 상담신청 폼 제출 250915_chatgpt 
+document.addEventListener('DOMContentLoaded', () => {	
+    const form = document.getElementById('consultationForm');	
+    if (form) {	
+        form.addEventListener('submit', async (e) => {	
+            e.preventDefault(); // 폼의 기본 제출 동작 방지	
+	
+            const formData = {	
+                name: document.getElementById('name').value,	
+			    phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,	
+                levelText: document.getElementById('levelText').value,
+                message: document.getElementById('message').value	
+            };	
+	
+            // 여기에 2단계에서 Make.com 웹훅으로부터 받은 실제 URL을 붙여넣으세요.	
+            const webhookUrl = 'https://hook.us2.make.com/p9l1fjhxgi593av171t371pyiwump44q'; 	
+	
+            // Make.com 웹훅으로 데이터 전송	
+            try {	
+                const response = await fetch(webhookUrl, {	
+                    method: 'POST',	
+                    headers: {	
+                        'Content-Type': 'application/json'	
+                    },	
+                    body: JSON.stringify(formData)	
+                });	
+	
+                if (response.ok) {	
+                    alert('상담 신청이 완료되었습니다. 확인 후 신속하게 연락드리겠습니다.');	
+                    form.reset(); // 폼 초기화	
+                } else {	
+                    alert('상담 신청에 실패했습니다. 잠시 후 다시 시도해주세요.');	
+                }	
+            } catch (error) {	
+                console.error('요청 오류:', error);	
+                alert('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');	
+            }	
+        });	
+    }	
+	
+    // 기존 "상담 신청하기" 버튼 클릭 시 폼 섹션으로 이동하는 기능	
+    const ctaButtons = document.querySelectorAll('.cta-button');	
+    ctaButtons.forEach(button => {	
+        if (button.textContent.includes('상담 신청하기')) {	
+            button.addEventListener('click', () => {	
+                const consultationSection = document.getElementById('consultation');	
+                if (consultationSection) {	
+                    consultationSection.scrollIntoView({ behavior: 'smooth' });	
+                }	
+            });	
+        }	
+    });	
+});	
 
-document.getElementById('consultationForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const name = document.getElementById('name').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const level = document.getElementById('level').value;
-    const message = document.getElementById('message').value.trim();
-
-    if (!name || !phone || !email || !level || !message) {
-        alert('모든 항목을 입력해 주세요.');
-        return;
-    }
-
-    // 메일 본문 구성
-    const mailSubject = `Fun-Fun English 상담 신청 - ${name}`;
-    const mailBody = `
-안녕하세요! Fun-Fun English 무료 상담 신청입니다.
-
-이름: ${name}
-연락처: ${phone}
-이메일: ${email}
-영어 수준: ${level}
-상담 내용:
-${message}
-
-감사합니다.`;
-
-    // 메일 전송용 mailto 링크
-    const mailtoLink = `mailto:son070@naver.com?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}`;
-
-    // 사용자에게 알림
-    alert('이메일 앱이 열립니다. 메일을 전송해 주세요.');
-
-    // 이메일 클라이언트 열기
-    window.location.href = mailtoLink;
-});
 
 // 부드러운 스크롤
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
